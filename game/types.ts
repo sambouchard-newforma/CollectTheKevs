@@ -25,7 +25,6 @@ export interface GameEngineEvent<T = never> {
 
 export interface GameEntity {
   body: Matter.Body;
-  color: ColorValue;
   pos: Position2D;
   renderer: React.ComponentType<GameEntity>;
 }

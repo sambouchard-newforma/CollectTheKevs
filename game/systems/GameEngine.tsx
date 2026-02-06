@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Text, TouchableOpacity, View, StyleSheet, Modal, Platform } from "react-native";
+import {Text, TouchableOpacity, View, StyleSheet, Modal, Platform, Image} from "react-native";
 import { GameEngine as ReactGameEngine } from "react-native-game-engine";
 import { GameEngine as WebGameEngine } from "react-game-engine";
+import { useAudioPlayer } from 'expo-audio';
+
 
 import { entities } from "@entities";
 import { GameLoop } from "@systems";
 import { GameEngineEvent, IGameEngine } from "@types";
 import { QuitSVG } from "@svg";
 
+const audioSourceKeven = require('assets/kevin-continue-comme-ca.mp3');
 type GameState = 'start' | 'playing' | 'paused';
 
 export default function GameEngine() {
@@ -20,6 +23,7 @@ export default function GameEngine() {
 
   const gameEntities = entities();
   const GameEngineComponent = Platform.OS === 'web' ? WebGameEngine : ReactGameEngine;
+
   // const { engine, world } = gameEntities.physics;
   // const gameEntities = entities();
 
@@ -65,18 +69,19 @@ export default function GameEngine() {
     resumeGame();
   };
 
+  const player = useAudioPlayer(audioSourceKeven);
+
   if (gameState === 'start') {
     return (
       <View style={styles.startScreen}>
         <View style={styles.titleContainer}>
-          <Text style={styles.balloonEmoji}>🎈</Text>
-          <Text style={styles.title}>Balloon Pop!</Text>
-          <Text style={styles.balloonEmoji}>🎈</Text>
+          <Image source={require('assets/SVG/Keven.gif')} style={styles.balloonEmoji}/>
+          <Text style={styles.title}>Collect the Kevs!</Text>
+          <Image source={require('assets/SVG/Keven.gif')} style={styles.balloonEmoji}/>
         </View>
         <View style={styles.instructionsContainer}>
-          <Text style={styles.instructions}>Tap the balloons before they hit the ground!</Text>
-          <Text style={styles.subInstructions}>• Tap balloons = +1 point</Text>
-          <Text style={styles.subInstructions}>• Miss a balloon = -1 point</Text>
+          <Text style={styles.instructions}>Collect all the Kevs!</Text>
+          <Text style={styles.subInstructions}>• Collect a Kev = +1 point</Text>
         </View>
         <TouchableOpacity style={styles.startButton} onPress={startGame}>
           <Text style={styles.startButtonText}>🚀 Start Game</Text>
@@ -94,6 +99,7 @@ export default function GameEngine() {
     );
   }
 
+
   return (
     <GameEngineComponent
       ref={(ref) => setGameEngine(ref as IGameEngine)}
@@ -103,6 +109,8 @@ export default function GameEngine() {
       onEvent={({ type }: GameEngineEvent) => {
         switch (type) {
           case "addToScore": {
+            player.seekTo(0);
+            player.play();
             setScore(prevScore => {
               const newScore = prevScore + 1;
               if (newScore > highScore) {
@@ -112,14 +120,11 @@ export default function GameEngine() {
             });
             break;
           }
-          case "subtractFromScore": {
-            setScore(score => Math.max(0, score - 1));
-            break;
-          }
         }
       }}
       style={{ position: "absolute", top, left, right, bottom }}
     >
+      <Image source={require('assets/01_Sky_Background.jpg')} style={{zIndex:  -100, width: '100%', height: '100%' }} />
       <TouchableOpacity
         onPress={() => {
           if (gameState === 'playing') {
@@ -149,7 +154,7 @@ export default function GameEngine() {
           {gameState === 'playing' ? `Score: ${score}` : "Press to Resume"}
         </Text>
       </TouchableOpacity>
-      
+
       {/* Exit Door Button */}
       {gameState === 'playing' && (
         <TouchableOpacity
@@ -159,7 +164,7 @@ export default function GameEngine() {
           <QuitSVG color="#FFFFFF" size={20} />
         </TouchableOpacity>
       )}
-      
+
       {gameState === 'paused' && (
         <TouchableOpacity
           style={styles.restartButton}
@@ -187,17 +192,17 @@ export default function GameEngine() {
               Are you sure you want to quit? Your current score will be lost.
             </Text>
             <Text style={styles.currentScoreText}>Current Score: {score}</Text>
-            
+
             <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.cancelButton]} 
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
                 onPress={handleCancelQuit}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.quitButton]} 
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.quitButton]}
                 onPress={handleQuitGame}
               >
                 <Text style={styles.quitButtonText}>Quit Game</Text>

@@ -24,7 +24,9 @@
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
     "babel-plugin-module-resolver": "^5.0.2",
+    "eas": "^0.1.0",
     "expo": "53.0.22",
+    "expo-audio": "~0.4.9",
     "expo-dev-client": "~5.2.4",
     "expo-status-bar": "~2.2.3",
     "matter-js": "^0.18.0",
